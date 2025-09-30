@@ -3,7 +3,6 @@
 .idea/
 .vscode/
 out/
-fourmolu.yaml
 Setup.hs
 .markdownlint.yaml
 stack.yaml.lock
