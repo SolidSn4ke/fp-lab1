@@ -1,0 +1,10 @@
+.stack-work/
+*~
+.idea/
+.vscode/
+out/
+fourmolu.yaml
+Setup.hs
+.markdownlint.yaml
+CHANGELOG.md
+stack.yaml.lock
