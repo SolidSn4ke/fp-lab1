@@ -29,7 +29,7 @@ euler5Tail n
     | otherwise = helper n 1
   where
     helper 1 acc = acc
-    helper n acc = helper (n - 1) (lcm acc n)
+    helper k acc = helper (k - 1) (lcm acc k)
 ```
 
 С помощью вспомогательной функции накапливается результат НОК между всеми числами
@@ -65,7 +65,9 @@ euler5Map :: Integer -> Integer
 euler5Map n
     | n < 1 = -1
     | n == 1 = 1
-    | otherwise = head . helper $ n
+    | otherwise = case helper n of
+      (h:_) -> h
+      [] -> -1
   where
     helper 1 = [1]
     helper k = map (lcm k) (helper $ k - 1)
@@ -80,10 +82,14 @@ euler5InfiniteList :: Integer -> Integer
 euler5InfiniteList n
     | n < 1 = -1
     | n == 1 = 1
-    | otherwise = head $ helper n [1 ..]
+    | otherwise = case helper n [1 ..] of
+      (h:_) -> h
+      [] -> -1
   where
+    helper _ [] = []
+    helper _ [_] = []
     helper 1 list = list
-    helper n (x1 : x2 : xs) = helper (n - 1) (lcm x1 x2 : xs)
+    helper k (x1 : x2 : xs) = helper (k - 1) (lcm x1 x2 : xs)
 ```
 
 `n` раз находим НОК для первых двух элементов бесконечного списка и добавляем результат в начало.

@@ -1,6 +1,6 @@
-module Lib where
+module Lib (euler5Tail, euler5Recursion, euler5Foldr, euler5Map, euler5InfiniteList, euler26Tail, euler26Recursion, euler26Foldr, euler26Map, euler26InfiniteList, cycleLength) where
 
-import Data.List
+import Data.List (elemIndex)
 
 euler5Tail :: Integer -> Integer
 euler5Tail n
@@ -8,7 +8,7 @@ euler5Tail n
     | otherwise = helper n 1
   where
     helper 1 acc = acc
-    helper n acc = helper (n - 1) (lcm acc n)
+    helper k acc = helper (k - 1) (lcm acc k)
 
 euler5Recursion :: Integer -> Integer
 euler5Recursion n
@@ -26,7 +26,9 @@ euler5Map :: Integer -> Integer
 euler5Map n
     | n < 1 = -1
     | n == 1 = 1
-    | otherwise = head . helper $ n
+    | otherwise = case helper n of
+        (h : _) -> h
+        [] -> -1
   where
     helper 1 = [1]
     helper k = map (lcm k) (helper $ k - 1)
@@ -35,10 +37,14 @@ euler5InfiniteList :: Integer -> Integer
 euler5InfiniteList n
     | n < 1 = -1
     | n == 1 = 1
-    | otherwise = head $ helper n [1 ..]
+    | otherwise = case helper n [1 ..] of
+        (h : _) -> h
+        [] -> -1
   where
+    helper _ [] = []
+    helper _ [_] = []
     helper 1 list = list
-    helper n (x1 : x2 : xs) = helper (n - 1) (lcm x1 x2 : xs)
+    helper k (x1 : x2 : xs) = helper (k - 1) (lcm x1 x2 : xs)
 
 cycleLength :: Integer -> Integer
 cycleLength n = case helper 10 [] of
