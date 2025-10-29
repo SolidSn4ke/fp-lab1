@@ -1,7 +1,7 @@
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Lib (cycleLength, euler26Foldr, euler26InfiniteList, euler26Map, euler26Recursion, euler26Tail, euler5Foldr, euler5InfiniteList, euler5Map, euler5Recursion, euler5Tail)
+import Lib (Mode (..), cycleLengthFold, cycleLengthInfiniteList, cycleLengthMap, cycleLengthTail, euler26, euler5Foldr, euler5InfiniteList, euler5Map, euler5Recursion, euler5Tail)
 
 main :: IO ()
 main = defaultMain tests
@@ -37,20 +37,36 @@ euler26Test :: TestTree
 euler26Test =
     testGroup
         "Euler problem 26 tests"
-        [ testCase "Cycle length for 1/7" $
-            cycleLength 7 @?= 6,
-          testCase "Cycle length for 1/3" $
-            cycleLength 3 @?= 1,
-          testCase "Cycle length for 1/10" $
-            cycleLength 10 @?= 0,
+        [ testCase "Cycle length tail for 1/7" $
+            cycleLengthTail 7 @?= 6,
+          testCase "Cycle length tail for 1/3" $
+            cycleLengthTail 3 @?= 1,
+          testCase "Cycle length tail for 1/10" $
+            cycleLengthTail 10 @?= 0,
+          testCase "Cycle length map for 1/7" $
+            cycleLengthMap 7 @?= 6,
+          testCase "Cycle length map for 1/3" $
+            cycleLengthMap 3 @?= 1,
+          testCase "Cycle length map for 1/10" $
+            cycleLengthMap 10 @?= 0,
+          testCase "Cycle length infinite list for 1/7" $
+            cycleLengthInfiniteList 7 @?= 6,
+          testCase "Cycle length infinite list for 1/3" $
+            cycleLengthInfiniteList 3 @?= 1,
+          testCase "Cycle length infinite list for 1/10" $
+            cycleLengthInfiniteList 10 @?= 0,
+          testCase "Cycle length fold for 1/7" $
+            cycleLengthFold 7 @?= 6,
+          testCase "Cycle length fold for 1/3" $
+            cycleLengthFold 3 @?= 1,
+          testCase "Cycle length fold for 1/10" $
+            cycleLengthFold 10 @?= 0,
           testCase "Tail recursion" $
-            euler26Tail 1000 @?= 983,
-          testCase "Recursion" $
-            euler26Recursion 1000 @?= 983,
-          testCase "Fold" $
-            euler26Foldr 1000 @?= 983,
+            euler26 1000 Tail @?= 983,
           testCase "Map" $
-            euler26Map 1000 @?= 983,
+            euler26 1000 Map @?= 983,
           testCase "Infinte list" $
-            euler26InfiniteList 1000 @?= 983
+            euler26 1000 InfiniteList @?= 983,
+          testCase "Fold" $
+            euler26 1000 Fold @?= 983
         ]
