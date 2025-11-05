@@ -1,6 +1,7 @@
-module Lib (euler5Tail, euler5Recursion, euler5Foldr, euler5Map, euler5InfiniteList, euler26Tail, euler26Recursion, euler26Foldr, euler26Map, euler26InfiniteList, cycleLength) where
+module Lib (cycleLengthFold, euler5Tail, euler5Recursion, euler5Foldr, euler5Map, euler5InfiniteList, euler26, cycleLengthTail, cycleLengthInfiniteList, cycleLengthMap, Mode (..)) where
 
-import Data.List (elemIndex)
+import Data.List (elemIndex, sortBy)
+import Data.Ord (Down (..), comparing)
 
 euler5Tail :: Integer -> Integer
 euler5Tail n
@@ -46,8 +47,8 @@ euler5InfiniteList n
     helper 1 list = list
     helper k (x1 : x2 : xs) = helper (k - 1) (lcm x1 x2 : xs)
 
-cycleLength :: Integer -> Integer
-cycleLength n = case helper 10 [] of
+cycleLengthTail :: Integer -> Integer
+cycleLengthTail n = case helper 10 [] of
     Just result -> toInteger result
     Nothing -> -1
   where
@@ -56,25 +57,47 @@ cycleLength n = case helper 10 [] of
         | (base `mod` n) `elem` rems = elemIndex (base `mod` n) (0 : rems)
         | otherwise = helper (10 * (base `mod` n)) ((base `mod` n) : rems)
 
-euler26Tail :: Integer -> Integer
-euler26Tail = helper 0 0
+cycleLengthInfiniteList :: Integer -> Integer
+cycleLengthInfiniteList n = case helper rems [] of
+    Just result -> toInteger result
+    Nothing -> -1
   where
-    helper result maxLength n
-        | n == 0 = result
-        | cycleLength n > maxLength = helper n (cycleLength n) (n - 1)
-        | otherwise = helper result maxLength (n - 1)
+    rems = drop 1 $ iterate (\x -> x * 10 `mod` n) 1
+    helper [] _ = Nothing
+    helper (x : xs) seen
+        | x == 0 = Just 0
+        | x `elem` seen = elemIndex x (0 : seen)
+        | otherwise = helper xs (x : seen)
 
-euler26Recursion :: Integer -> Integer
-euler26Recursion = snd . helper
+cycleLengthMap :: Integer -> Integer
+cycleLengthMap n = helper result
   where
-    helper 1 = (cycleLength 1, 1)
-    helper n = max (cycleLength n, n) (helper (n - 1))
+    helper (x1 : x2 : _)
+        | (\(_, _, value) -> value) x1 == 0 = 0
+        | otherwise = (\(_, pos1, _) -> pos1) x1 - (\(_, pos2, _) -> pos2) x2
+    helper [] = -1
+    helper (_ : _) = 0
+    result = take 2 $ sortBy (comparing Down) $ map (\(pos, r) -> (countElem r :: Integer, pos, r)) rems
+    rems = zip [1 .. n] $ take (fromIntegral n) . drop 1 $ iterate (\x -> x * 10 `mod` n) 1
+    countElem e = fromIntegral . length . filter (\(_, num) -> num == e) $ rems
 
-euler26Foldr :: Integer -> Integer
-euler26Foldr n = snd $ foldr max (-1, 0) [(cycleLength x, x) | x <- [1 .. n]]
+cycleLengthFold :: Integer -> Integer
+cycleLengthFold n = helper
+  where
+    helper = if 0 `elem` rems then 0 else toInteger $ distinctCount - indexOfDuplicate
+    rems = take (fromIntegral n) . drop 1 $ iterate (\x -> x * 10 `mod` n) 1
+    distinctCount = length $ foldl (\list e -> if e `elem` list then list else e : list) [] rems
+    firstDuplicate = rems !! distinctCount
+    indexOfDuplicate = case elemIndex firstDuplicate rems of
+        Just index -> index
+        Nothing -> -1
 
-euler26Map :: Integer -> Integer
-euler26Map n = snd . maximum $ map (\x -> (cycleLength x, x)) [1 .. n]
+data Mode = Tail | Map | InfiniteList | Fold deriving (Eq)
 
-euler26InfiniteList :: Integer -> Integer
-euler26InfiniteList n = snd . maximum $ take (fromIntegral n) (zip ([cycleLength x | x <- [1 ..]]) [1 ..])
+euler26 :: Integer -> Mode -> Integer
+euler26 n m
+    | m == Tail = snd $ foldr max (-1, 0) [(cycleLengthTail x, x) | x <- [1 .. n]]
+    | m == Map = snd $ foldr max (-1, 0) [(cycleLengthMap x, x) | x <- [1 .. n]]
+    | m == InfiniteList = snd $ foldr max (-1, 0) [(cycleLengthInfiniteList x, x) | x <- [1 .. n]]
+    | m == Fold = snd $ foldr max (-1, 0) [(cycleLengthFold x, x) | x <- [1 .. n]]
+    | otherwise = -1
